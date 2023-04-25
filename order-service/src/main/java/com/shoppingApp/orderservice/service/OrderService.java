@@ -5,13 +5,16 @@ import com.shoppingApp.orderservice.dto.OrderRequest;
 import com.shoppingApp.orderservice.model.Order;
 import com.shoppingApp.orderservice.model.OrderLineItems;
 import com.shoppingApp.orderservice.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
 
@@ -19,9 +22,16 @@ public class OrderService {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
 
-        orderRequest.getOrderLineItemsDtoList().stream()
+        List<OrderLineItems> orderLineItems = orderRequest.getOrderLineItemsDtoList().stream()
                 .map(this::mapToDto)
                 .toList();
+
+        order.setOrderLineItemsList(orderLineItems);
+
+        List<String> skuCodes = order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).toList();
+
+
+
         orderRepository.save(order);
     }
 
